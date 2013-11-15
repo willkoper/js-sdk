@@ -45,18 +45,8 @@ module.exports = function(grunt) {
 			var newCfg = _.cloneDeep(sample);
 
 			// remove some fields which shouldn't be in the resulting config
-			if (env === "development" || env === "test" || env === "ci") {
-				delete newCfg.release;
-			}
 			if (env === "ci") {
 				delete newCfg.saucelabs;
-			}
-			if (env === "staging") {
-				delete newCfg.release.purger;
-				delete newCfg.release.auth.cdn;
-			}
-			if (env === "production") {
-				delete newCfg.release.auth.sandbox;
 			}
 
 			noValue = [];

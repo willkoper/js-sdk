@@ -40,8 +40,8 @@
     "grunt-express": "~1.2.1"
   },
   "devDependencies": {
-    "ftp": "~0.1.7",
-    "grunt-contrib-watch": "~0.5.3"
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-echo-release": "git+ssh://git@github.com:EchoAppsTeam/grunt-echo-release.git"
   },
   "private": true
 }

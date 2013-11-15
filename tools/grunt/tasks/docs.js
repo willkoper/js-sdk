@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 				"docs:generate",
 				"clean:build"
 			];
-			if (shared.config("release")) {
+			if (grunt.config("release.options.inProgress")) {
 				tasks.push("docs:release");
 			}
 			grunt.task.run(tasks);

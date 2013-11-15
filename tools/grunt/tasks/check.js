@@ -88,25 +88,25 @@ module.exports = function(grunt) {
 			}
 			return headers;
 		};
-		var collectURLs = function(uploads) {
-			_.each(uploads, function(upload) {
-				var baseSrcPath = grunt.template.process(upload.baseSrcPath);
-				var dest = grunt.template.process(upload.dest);
-				var src = grunt.file.expand({"filter": "isFile"}, baseSrcPath + upload.src);
-				_.each(src, function(srcName) {
-					URLs.push("http:" + grunt.config("envConfig.baseURLs.cdn") + dest + srcName.replace(baseSrcPath, ""));
+		URLs = _(grunt.config("release"))
+			.chain()
+			.keys()
+			.map(function(key) {
+				if (key === "options") return [];
+				return _.values(grunt.config(["release", key, "options", "deployTargets"]));
+			})
+			.flatten()
+			.map(function(upload) {
+				var files = grunt.file.expand({
+					"cwd": upload.cwd,
+					"filter": "isFile"
+				}, upload.src);
+				return _.map(files, function(name) {
+					return "http:" + grunt.config("envConfig.baseURLs.cdn") + upload.dest + name;
 				});
-			});
-		};
-		_.each(grunt.config("envConfig.release.targets"), function(uploads) {
-			if (_.isArray(uploads)) {
-				collectURLs(uploads);
-			} else {
-				_.each(uploads, function(upload) {
-					collectURLs(upload);
-				});
-			}
-		});
+			})
+			.flatten()
+			.value();
 		URLs.sort();
 		async.eachSeries(URLs, function(URL, next) {
 			var type = URL.match(/\.([^\.]+)$/)[1];

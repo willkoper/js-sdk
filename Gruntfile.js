@@ -16,6 +16,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-recess");
 	grunt.loadNpmTasks("grunt-saucelabs");
 	grunt.loadNpmTasks("grunt-contrib-watch");
+	grunt.loadNpmTasks("grunt-echo-release");
 
 	grunt.registerTask("default", ["check:config", "jshint", "clean:all", "build:sdk"]);
 
@@ -459,6 +460,73 @@ module.exports = function(grunt) {
 				"bases": ["<%= dirs.dist %>"]
 			},
 			"test": {}
+		},
+		"release": {
+			"options": {
+				"environment": shared.config("env"),
+				"debug": shared.config("debug"),
+				"configFile": "config/release.json",
+				"location": shared.config("env") === "staging" ? "sandbox" : "cdn",
+				"remoteRoot": shared.config("env") === "staging" ? "/staging" : ""
+			},
+			"regular": {
+				"options": {
+					"deployTargets": {
+						"code:latest": [{
+							"src": "**",
+							"cwd": "<%= dirs.dest %>/v<%= pkg.majorVersion %>/",
+							"dest": "<%= release.options.remoteRoot %>/sdk/v<%= pkg.majorVersion %>/"
+						}],
+						"code:stable": [{
+							"src": "**",
+							"cwd": "<%= dirs.dest %>/v<%= pkg.majorVersion %>/",
+							"dest": "<%= release.options.remoteRoot %>/sdk/v<%= pkg.version %>/"
+						}],
+						"apps": [{
+							"src": "**",
+							"cwd": "<%= dirs.dist %>/apps/",
+							"dest": "<%= release.options.remoteRoot %>/apps/"
+						}]
+					},
+					"purgeTitle": "SDK",
+					"purgePaths": [
+						"/sdk/v<%= pkg.majorVersion %>/",
+						"/sdk/v<%= pkg.version %>/",
+						"/apps/"
+					],
+					"beforeDeploy": ["patch:loader-release:stable"],
+					"afterDeploy": shared.config("env") === "staging" ? [] : ["docs"]
+				}
+			},
+			"beta": {
+				"options": {
+					"deployTargets": {
+						"code:beta": [{
+							"src": "**",
+							"cwd": "<%= dirs.dest %>/v<%= pkg.majorVersion %>/",
+							"dest": "<%= release.options.remoteRoot %>/sdk/v<%= pkg.majorVersion %>.beta/"
+						}]
+					},
+					"purgeTitle": "SDK BETA",
+					"purgePaths": [
+						"/sdk/v<%= pkg.majorVersion %>.beta/"
+					],
+					"beforeDeploy": ["patch:loader-release:beta"]
+				}
+			},
+			"purge": {
+				"options": {
+					"skipBuild": true,
+					"purgePaths": ["/sdk/", "/apps/"]
+				}
+			},
+			"pages": {
+				"options": {
+					"skipBuild": true,
+					"skipPurge": true,
+					"afterDeploy": ["docs"]
+				}
+			}
 		},
 		"saucelabs-qunit": {
 			"options": {
